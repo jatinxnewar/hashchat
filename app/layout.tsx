@@ -18,9 +18,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className + " relative min-h-screen"}>
+        {/* Futuristic animated background */}
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-0 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a192f] animate-pulse opacity-90"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/60 via-transparent to-transparent blur-2xl" />
+        </div>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          {/* Global notification area */}
+          <div id="global-toast" className="fixed top-4 right-4 z-50" />
+          <main className="relative z-10">{children}</main>
         </ThemeProvider>
       </body>
     </html>
