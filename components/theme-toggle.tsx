@@ -1,5 +1,5 @@
 "use client"
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun, Check } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -24,20 +24,23 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end" className="dark:bg-gray-900 dark:border-gray-700">
         <DropdownMenuItem
           onClick={() => setTheme("light")}
-          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer"
+          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer flex items-center"
         >
+          {theme === "light" && <Check className="w-4 h-4 mr-2 text-primary-500" />}
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("dark")}
-          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer"
+          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer flex items-center"
         >
+          {theme === "dark" && <Check className="w-4 h-4 mr-2 text-primary-500" />}
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("system")}
-          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer"
+          className="dark:text-gray-300 dark:focus:bg-gray-800 cursor-pointer flex items-center"
         >
+          {theme === "system" && <Check className="w-4 h-4 mr-2 text-primary-500" />}
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
