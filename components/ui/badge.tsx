@@ -13,17 +13,26 @@ const badgeVariants = cva(
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
       },
+      pulse: {
+        true: "animate-pulse",
+        false: "",
+      },
     },
     defaultVariants: {
       variant: "default",
+      pulse: false,
     },
   },
 )
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
+  pulse?: boolean
+}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+function Badge({ className, variant, pulse = false, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant, pulse }), className)} {...props} />
+  )
 }
 
 export { Badge, badgeVariants }
