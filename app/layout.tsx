@@ -18,7 +18,7 @@ function ThemeShortcut() {
   const { theme, setTheme } = useTheme()
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key.toLowerCase() === "j") {
+      if (e.ctrlKey && e.key.toLowerCase() === "m") {
         setTheme(theme === "dark" ? "light" : "dark")
       }
     }
