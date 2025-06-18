@@ -29,7 +29,6 @@ export default function RootLayout({
   )
 }
 
-import React from "react"
 
 const loadingMessages = [
   "Encrypting your messages...",
