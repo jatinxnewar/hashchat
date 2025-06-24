@@ -15,3 +15,18 @@ export function ThemeShortcut() {
   }, [theme, setTheme])
   return null
 }
+
+/**
+ * Triggers a CSS animation by adding a class and removing it after animation ends.
+ * @param element The HTMLElement to animate
+ * @param animationClass The CSS class that defines the animation
+ */
+export function triggerAnimation(element: HTMLElement, animationClass: string) {
+  if (!element) return
+  element.classList.add(animationClass)
+  function handleAnimationEnd() {
+    element.classList.remove(animationClass)
+    element.removeEventListener("animationend", handleAnimationEnd)
+  }
+  element.addEventListener("animationend", handleAnimationEnd)
+}
