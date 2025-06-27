@@ -30,3 +30,17 @@ export function triggerAnimation(element: HTMLElement, animationClass: string) {
   }
   element.addEventListener("animationend", handleAnimationEnd)
 }
+
+/**
+ * Smoothly scrolls the given element into view.
+ * @param element The HTMLElement to scroll into view
+ * @param options ScrollIntoView options (optional)
+ */
+export function smoothScrollIntoView(
+  element: HTMLElement | null,
+  options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" }
+) {
+  if (element) {
+    element.scrollIntoView(options)
+  }
+}
