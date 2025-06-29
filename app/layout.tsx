@@ -162,20 +162,26 @@ export function smoothScrollIntoView(
 ) {
   if (!element) return
 
+  // Scroll into view
   element.scrollIntoView(options)
 
+  // Highlight effect
   if (highlight) {
-    const originalTransition = element.style.transition
-    const originalBg = element.style.backgroundColor
-    element.style.transition = "background-color 0.3s"
-    element.style.backgroundColor = highlightColor
+    const originalTransition = element.style.transition || "";
+    const originalBg = element.style.backgroundColor || "";
 
-    setTimeout(() => {
-      element.style.backgroundColor = originalBg
-      element.style.transition = originalTransition
-      if (onDone) onDone()
-    }, highlightDuration)
+    // Use requestAnimationFrame to ensure style is applied after scroll
+    requestAnimationFrame(() => {
+      element.style.transition = "background-color 0.3s";
+      element.style.backgroundColor = highlightColor;
+
+      setTimeout(() => {
+        element.style.backgroundColor = originalBg;
+        element.style.transition = originalTransition;
+        if (onDone) onDone();
+      }, highlightDuration);
+    });
   } else if (onDone) {
-    setTimeout(onDone, 400) // Estimate scroll duration
+    setTimeout(onDone, 400); // Estimate scroll duration
   }
 }
