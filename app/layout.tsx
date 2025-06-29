@@ -144,15 +144,38 @@ export function Loading() {
 }
 
 /**
- * Smoothly scrolls the given element into view.
+ * Smoothly scrolls the given element into view, with optional highlight and callback.
  * @param element The HTMLElement to scroll into view
  * @param options ScrollIntoView options (optional)
+ * @param highlight If true, highlights the element after scrolling (default: false)
+ * @param highlightColor The background color to use for highlight (default: yellow)
+ * @param highlightDuration How long the highlight lasts in ms (default: 800)
+ * @param onDone Optional callback after scrolling and highlight
  */
 export function smoothScrollIntoView(
   element: HTMLElement | null,
-  options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" }
+  options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" },
+  highlight: boolean = false,
+  highlightColor: string = "#fef08a",
+  highlightDuration: number = 800,
+  onDone?: () => void
 ) {
-  if (element) {
-    element.scrollIntoView(options)
+  if (!element) return
+
+  element.scrollIntoView(options)
+
+  if (highlight) {
+    const originalTransition = element.style.transition
+    const originalBg = element.style.backgroundColor
+    element.style.transition = "background-color 0.3s"
+    element.style.backgroundColor = highlightColor
+
+    setTimeout(() => {
+      element.style.backgroundColor = originalBg
+      element.style.transition = originalTransition
+      if (onDone) onDone()
+    }, highlightDuration)
+  } else if (onDone) {
+    setTimeout(onDone, 400) // Estimate scroll duration
   }
 }
