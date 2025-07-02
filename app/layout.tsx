@@ -144,13 +144,17 @@ export function Loading() {
 }
 
 /**
- * Smoothly scrolls the given element into view, with optional highlight and callback.
+ * Smoothly scrolls the given element into view, with optional highlight, callback, offset, horizontal scroll, focus, and only-if-not-visible check.
  * @param element The HTMLElement to scroll into view
  * @param options ScrollIntoView options (optional)
  * @param highlight If true, highlights the element after scrolling (default: false)
  * @param highlightColor The background color to use for highlight (default: yellow)
  * @param highlightDuration How long the highlight lasts in ms (default: 800)
  * @param onDone Optional callback after scrolling and highlight
+ * @param offset Optional vertical offset in pixels (e.g., for fixed headers)
+ * @param horizontal If true, scrolls horizontally instead of vertically
+ * @param focus If true, focuses the element after scrolling
+ * @param onlyIfNotVisible If true, only scrolls if the element is not already visible
  */
 export function smoothScrollIntoView(
   element: HTMLElement | null,
@@ -158,30 +162,111 @@ export function smoothScrollIntoView(
   highlight: boolean = false,
   highlightColor: string = "#fef08a",
   highlightDuration: number = 800,
-  onDone?: () => void
+  onDone?: () => void,
+  offset: number = 0,
+  horizontal: boolean = false,
+  focus: boolean = false,
+  onlyIfNotVisible: boolean = false
 ) {
   if (!element) return
 
-  // Scroll into view
+  // Only scroll if not visible
+  if (onlyIfNotVisible && isElementInViewport(element)) {
+    if (focus) element.focus?.()
+    if (highlight) {
+      const originalTransition = element.style.transition || ""
+      const originalBg = element.style.backgroundColor || ""
+      requestAnimationFrame(() => {
+        element.style.transition = "background-color 0.3s"
+        element.style.backgroundColor = highlightColor
+        setTimeout(() => {
+          element.style.backgroundColor = originalBg
+          element.style.transition = originalTransition
+          if (onDone) onDone()
+        }, highlightDuration)
+      })
+    } else if (onDone) {
+      onDone()
+    }
+    return
+  }
+
   element.scrollIntoView(options)
 
-  // Highlight effect
-  if (highlight) {
-    const originalTransition = element.style.transition || "";
-    const originalBg = element.style.backgroundColor || "";
-
-    // Use requestAnimationFrame to ensure style is applied after scroll
-    requestAnimationFrame(() => {
-      element.style.transition = "background-color 0.3s";
-      element.style.backgroundColor = highlightColor;
-
-      setTimeout(() => {
-        element.style.backgroundColor = originalBg;
-        element.style.transition = originalTransition;
-        if (onDone) onDone();
-      }, highlightDuration);
-    });
-  } else if (onDone) {
-    setTimeout(onDone, 400); // Estimate scroll duration
+  // If offset is set, adjust scroll position after scrollIntoView
+  if (offset !== 0) {
+    setTimeout(() => {
+      if (horizontal) {
+        const start = window.scrollX
+        const end = start + offset
+        animateScroll(start, end, 400, x => window.scrollTo(x, window.scrollY))
+      } else {
+        const start = window.scrollY
+        const end = start + offset
+        animateScroll(start, end, 400, y => window.scrollTo(window.scrollX, y))
+      }
+    }, 100)
   }
+
+  if (highlight) {
+    const originalTransition = element.style.transition || ""
+    const originalBg = element.style.backgroundColor || ""
+    requestAnimationFrame(() => {
+      element.style.transition = "background-color 0.3s"
+      element.style.backgroundColor = highlightColor
+      setTimeout(() => {
+        element.style.backgroundColor = originalBg
+        element.style.transition = originalTransition
+        if (onDone) onDone()
+      }, highlightDuration)
+    })
+  } else if (onDone) {
+    setTimeout(onDone, 400)
+  }
+
+  if (focus) {
+    setTimeout(() => {
+      element.focus?.()
+    }, 500)
+  }
+}
+
+/**
+ * Checks if an element is in the viewport.
+ */
+function isElementInViewport(el: HTMLElement) {
+  const rect = el.getBoundingClientRect()
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  )
+}
+
+/**
+ * Animate scroll position with easeInOutQuad.
+ */
+function animateScroll(
+  start: number,
+  end: number,
+  duration: number,
+  setPos: (pos: number) => void
+) {
+  const startTime = performance.now()
+  function animate(now: number) {
+    const elapsed = now - startTime
+    const t = Math.min(1, elapsed / duration)
+    const eased = easeInOutQuad(t)
+    setPos(start + (end - start) * eased)
+    if (t < 1) requestAnimationFrame(animate)
+  }
+  requestAnimationFrame(animate)
+}
+
+/**
+ * Ease in out quad function for smooth animation.
+ */
+function easeInOutQuad(t: number) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 }
