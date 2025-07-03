@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
@@ -232,8 +232,6 @@ export default function GroupsPage() {
   )
 }
 
-import React from "react"
-
 const loadingMessages = [
   "Encrypting your messages...",
   "Establishing secure connection...",
@@ -325,3 +323,203 @@ export function Loading() {
     </div>
   )
 }
+
+/**
+ * Smoothly scrolls the given element into view, with many options.
+ * @param element The HTMLElement to scroll into view
+ * @param options ScrollIntoView options (optional)
+ * @param highlight If true, highlights the element after scrolling (default: false)
+ * @param highlightColor The background color to use for highlight (default: yellow)
+ * @param highlightDuration How long the highlight lasts in ms (default: 800)
+ * @param onDone Optional callback after scrolling and highlight
+ * @param offset Optional vertical offset in pixels (e.g., for fixed headers)
+ * @param horizontal If true, scrolls horizontally instead of vertically
+ * @param focus If true, focuses the element after scrolling
+ * @param onlyIfNotVisible If true, only scrolls if the element is not already visible
+ * @param animationClass Optional CSS animation class to apply after scrolling
+ * @param container Optional scrollable container (defaults to window)
+ * @param onScrollStart Optional callback before scrolling starts
+ */
+export function smoothScrollIntoView(
+  element: HTMLElement | null,
+  options: ScrollIntoViewOptions = { behavior: "smooth", block: "center" },
+  highlight: boolean = false,
+  highlightColor: string = "#fef08a",
+  highlightDuration: number = 800,
+  onDone?: () => void,
+  offset: number = 0,
+  horizontal: boolean = false,
+  focus: boolean = false,
+  onlyIfNotVisible: boolean = false,
+  animationClass?: string,
+  container?: HTMLElement | Window,
+  onScrollStart?: () => void
+) {
+  if (!element) return
+
+  // Only scroll if not visible
+  if (onlyIfNotVisible && isElementInViewport(element, container)) {
+    if (focus) element.focus?.()
+    if (highlight) highlightElement(element, highlightColor, highlightDuration, onDone)
+    else if (onDone) onDone()
+    if (animationClass) triggerAnimation(element, animationClass)
+    return
+  }
+
+  if (onScrollStart) onScrollStart()
+
+  // Scroll logic
+  if (container && container !== window) {
+    scrollElementIntoContainerView(element, container as HTMLElement, options, offset, horizontal)
+  } else {
+    element.scrollIntoView(options)
+    if (offset !== 0) {
+      setTimeout(() => {
+        if (horizontal) {
+          const start = window.scrollX
+          const end = start + offset
+          animateScroll(start, end, 400, x => window.scrollTo(x, window.scrollY))
+        } else {
+          const start = window.scrollY
+          const end = start + offset
+          animateScroll(start, end, 400, y => window.scrollTo(window.scrollX, y))
+        }
+      }, 100)
+    }
+  }
+
+  if (highlight) highlightElement(element, highlightColor, highlightDuration, onDone)
+  else if (onDone) setTimeout(onDone, 400)
+
+  if (focus) setTimeout(() => element.focus?.(), 500)
+
+  if (animationClass) triggerAnimation(element, animationClass)
+}
+
+/**
+ * Checks if an element is in the viewport (window or container).
+ */
+function isElementInViewport(el: HTMLElement, container?: HTMLElement | Window) {
+  const rect = el.getBoundingClientRect()
+  if (!container || container === window) {
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    )
+  } else {
+    const cRect = (container as HTMLElement).getBoundingClientRect()
+    return (
+      rect.top >= cRect.top &&
+      rect.left >= cRect.left &&
+      rect.bottom <= cRect.bottom &&
+      rect.right <= cRect.right
+    )
+  }
+}
+
+/**
+ * Highlight an element with a color for a duration.
+ */
+function highlightElement(
+  element: HTMLElement,
+  color: string,
+  duration: number,
+  onDone?: () => void
+) {
+  const originalTransition = element.style.transition || ""
+  const originalBg = element.style.backgroundColor || ""
+  requestAnimationFrame(() => {
+    element.style.transition = "background-color 0.3s"
+    element.style.backgroundColor = color
+    setTimeout(() => {
+      element.style.backgroundColor = originalBg
+      element.style.transition = originalTransition
+      if (onDone) onDone()
+    }, duration)
+  })
+}
+
+/**
+ * Animate scroll position with easeInOutQuad.
+ */
+function animateScroll(
+  start: number,
+  end: number,
+  duration: number,
+  setPos: (pos: number) => void
+) {
+  const startTime = performance.now()
+  function animate(now: number) {
+    const elapsed = now - startTime
+    const t = Math.min(1, elapsed / duration)
+    const eased = easeInOutQuad(t)
+    setPos(start + (end - start) * eased)
+    if (t < 1) requestAnimationFrame(animate)
+  }
+  requestAnimationFrame(animate)
+}
+
+/**
+ * Ease in out quad function for smooth animation.
+ */
+function easeInOutQuad(t: number) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+}
+
+/**
+ * Triggers a CSS animation by adding a class and removing it after animation ends.
+ */
+function triggerAnimation(element: HTMLElement, animationClass: string) {
+  element.classList.add(animationClass)
+  function handleAnimationEnd() {
+    element.classList.remove(animationClass)
+    element.removeEventListener("animationend", handleAnimationEnd)
+  }
+  element.addEventListener("animationend", handleAnimationEnd)
+}
+
+/**
+ * Scrolls an element into view within a container, with offset and direction support.
+ */
+function scrollElementIntoContainerView(
+  element: HTMLElement,
+  container: HTMLElement,
+  options: ScrollIntoViewOptions,
+  offset: number,
+  horizontal: boolean
+) {
+  const elRect = element.getBoundingClientRect()
+  const cRect = container.getBoundingClientRect()
+  if (horizontal) {
+    const scrollLeft = container.scrollLeft + elRect.left - cRect.left + offset
+    container.scrollTo({ left: scrollLeft, behavior: options.behavior || "smooth" })
+  } else {
+    const scrollTop = container.scrollTop + elRect.top - cRect.top + offset
+    container.scrollTo({ top: scrollTop, behavior: options.behavior || "smooth" })
+  }
+}
+
+// Example usage: To use smoothScrollIntoView, call it inside a React component or effect.
+// For example:
+/*
+import { useRef, useEffect } from "react";
+const exampleRef = useRef<HTMLElement | null>(null);
+useEffect(() => {
+  if (exampleRef.current) {
+    smoothScrollIntoView(
+      exampleRef.current,
+      { behavior: "smooth", block: "center" },
+      true, "#fef08a", 800,
+      () => alert("Scroll done!"),
+      -64, false, true, true,
+      "animate-bounce", // animationClass
+      document.getElementById("scroll-container") || undefined, // container
+      () => console.log("Scrolling started!") // onScrollStart
+    );
+  }
+}, []);
+// Attach exampleRef to an element in your JSX:
+// <div ref={exampleRef}>Scroll to me!</div>
+*/
