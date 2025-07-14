@@ -668,6 +668,16 @@ function removeScrollIndicatorBar(bar: HTMLDivElement | null) {
 /**
  * Animate scroll position with easeInOutQuad and call onComplete when done.
  */
+
+/**
+ * Easing function for smooth animation (easeInOutQuad).
+ * @param t A value between 0 and 1
+ * @returns The eased value
+ */
+function easeInOutQuad(t: number): number {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+}
+
 function animateScroll(
   start: number,
   end: number,
